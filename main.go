@@ -37,6 +37,7 @@ func main() {
 	r.HandleFunc("/geopoints", routes.PostGeopointHandler).Methods("POST")
 	r.HandleFunc("/geopoints/{id}", routes.GetGeopointHandler).Methods("GET")
 	r.HandleFunc("/geopoints/{id}", routes.DeleteGeopointHandler).Methods("DELETE")
+	r.HandleFunc("/geopoints/{id}", routes.UpdateGeopointHandler).Methods("PUT") // Ruta para actualizar un geopoint
 
 	// Ruta para subir imágenes
 	r.HandleFunc("/upload", routes.UploadImageHandler).Methods("POST")

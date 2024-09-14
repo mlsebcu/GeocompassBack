@@ -71,7 +71,14 @@ func GetGeopointsHandler(w http.ResponseWriter, r *http.Request) {
 func GetGeopointHandler(w http.ResponseWriter, r *http.Request) {
 	var geopoint models.Geopoint
 	params := mux.Vars(r)
-	db.DB.First(&geopoint, params["id"])
+	result := db.DB.First(&geopoint, params["id"])
+
+	if result.Error != nil {
+		fmt.Println("Error buscando geopoint:", result.Error)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Geopoint not found"))
+		return
+	}
 
 	if geopoint.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -100,7 +107,14 @@ func PostGeopointHandler(w http.ResponseWriter, r *http.Request) {
 func DeleteGeopointHandler(w http.ResponseWriter, r *http.Request) {
 	var geopoint models.Geopoint
 	params := mux.Vars(r)
-	db.DB.First(&geopoint, params["id"])
+	result := db.DB.First(&geopoint, params["id"])
+
+	if result.Error != nil {
+		fmt.Println("Error buscando geopoint para eliminar:", result.Error)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Geopoint not found"))
+		return
+	}
 
 	if geopoint.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -110,4 +124,41 @@ func DeleteGeopointHandler(w http.ResponseWriter, r *http.Request) {
 
 	db.DB.Unscoped().Delete(&geopoint)
 	w.WriteHeader(http.StatusOK)
+}
+
+// UpdateGeopointHandler actualiza un geopoint por ID
+func UpdateGeopointHandler(w http.ResponseWriter, r *http.Request) {
+	var geopoint models.Geopoint
+	params := mux.Vars(r)
+
+	// Buscar el geopoint existente en la base de datos
+	result := db.DB.First(&geopoint, params["id"])
+
+	if result.Error != nil {
+		fmt.Println("Error buscando geopoint para actualizar:", result.Error)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Geopoint not found"))
+		return
+	}
+
+	if geopoint.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Geopoint not found"))
+		return
+	}
+
+	// Actualizar los campos del geopoint
+	var updatedGeopoint models.Geopoint
+	json.NewDecoder(r.Body).Decode(&updatedGeopoint)
+
+	geopoint.Nombre = updatedGeopoint.Nombre
+	geopoint.Latitude = updatedGeopoint.Latitude
+	geopoint.Longitude = updatedGeopoint.Longitude
+	geopoint.Address = updatedGeopoint.Address
+	geopoint.ImageURL = updatedGeopoint.ImageURL
+
+	// Guardar los cambios en la base de datos
+	db.DB.Save(&geopoint)
+
+	json.NewEncoder(w).Encode(&geopoint)
 }
