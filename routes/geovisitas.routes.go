@@ -97,7 +97,7 @@ func UpdateGeovisitaHandler(w http.ResponseWriter, r *http.Request) {
 	geovisita.FechaNacimiento = updatedGeovisita.FechaNacimiento
 	geovisita.Edad = updatedGeovisita.Edad
 	geovisita.FechaVisita = updatedGeovisita.FechaVisita
-	geovisita.Direccion = updatedGeovisita.Direccion
+	geovisita.Address = updatedGeovisita.Address
 	geovisita.Telefono = updatedGeovisita.Telefono
 	geovisita.NombreMadre = updatedGeovisita.NombreMadre
 	geovisita.NombrePadre = updatedGeovisita.NombrePadre
@@ -106,6 +106,9 @@ func UpdateGeovisitaHandler(w http.ResponseWriter, r *http.Request) {
 	geovisita.Mujeres = updatedGeovisita.Mujeres
 	geovisita.InscritosCDI = updatedGeovisita.InscritosCDI
 	geovisita.ConQuienVive = updatedGeovisita.ConQuienVive
+	geovisita.ComoVive = updatedGeovisita.ComoVive
+	geovisita.TipoCasa = updatedGeovisita.TipoCasa
+	geovisita.QuienesTrabajan = updatedGeovisita.QuienesTrabajan
 	geovisita.TrabajaNino = updatedGeovisita.TrabajaNino
 	geovisita.Observaciones = updatedGeovisita.Observaciones
 

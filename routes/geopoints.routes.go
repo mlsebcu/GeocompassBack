@@ -155,6 +155,9 @@ func UpdateGeopointHandler(w http.ResponseWriter, r *http.Request) {
 	geopoint.Latitude = updatedGeopoint.Latitude
 	geopoint.Longitude = updatedGeopoint.Longitude
 	geopoint.Address = updatedGeopoint.Address
+	geopoint.FechaNacimiento = updatedGeopoint.FechaNacimiento
+	geopoint.Edad = updatedGeopoint.Edad
+	geopoint.Telefono = updatedGeopoint.Telefono
 	geopoint.ImageURL = updatedGeopoint.ImageURL
 
 	// Guardar los cambios en la base de datos

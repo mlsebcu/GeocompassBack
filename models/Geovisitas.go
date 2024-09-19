@@ -9,7 +9,7 @@ type Geovisitas struct {
 	FechaNacimiento string `json:"fecha_nacimiento" gorm:"not null"` // Puede ser time.Time
 	Edad            int    `json:"edad" gorm:"not null"`
 	FechaVisita     string `json:"fecha_visita" gorm:"not null"` // Puede ser time.Time
-	Direccion       string `json:"direccion" gorm:"not null"`
+	Address         string `json:"address" gorm:"not null"`      // Cambio de Direccion a Address
 	Telefono        string `json:"telefono" gorm:"not null"`
 	NombreMadre     string `json:"nombre_madre"`
 	NombrePadre     string `json:"nombre_padre"`
