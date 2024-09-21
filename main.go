@@ -14,8 +14,7 @@ func main() {
 	db.DBConnection()
 
 	// AutoMigrate se asegura de que las tablas para los modelos existan
-	db.DB.AutoMigrate(&models.User{}, &models.Geopoint{}) // Incluimos la migración del modelo Geopoint
-	db.DB.AutoMigrate(&models.Geovisitas{})
+	db.DB.AutoMigrate(&models.User{}, &models.Geopoint{}, &models.Geovisitas{})
 
 	r := mux.NewRouter()
 
@@ -33,19 +32,23 @@ func main() {
 	r.HandleFunc("/users/{id}", routes.DeleteUserHandler).Methods("DELETE")
 	r.HandleFunc("/login", routes.LoginHandler).Methods("POST")
 
-	// Nuevas rutas para los geopoints
+	// Rutas para los geopoints
 	r.HandleFunc("/geopoints", routes.GetGeopointsHandler).Methods("GET")
 	r.HandleFunc("/geopoints", routes.PostGeopointHandler).Methods("POST")
 	r.HandleFunc("/geopoints/{id}", routes.GetGeopointHandler).Methods("GET")
 	r.HandleFunc("/geopoints/{id}", routes.DeleteGeopointHandler).Methods("DELETE")
-	r.HandleFunc("/geopoints/{id}", routes.UpdateGeopointHandler).Methods("PUT") // Ruta para actualizar un geopoint
+	r.HandleFunc("/geopoints/{id}", routes.UpdateGeopointHandler).Methods("PUT")
 
-	//Nuevas rutas para las geovisitas
+	// Rutas para las geovisitas
 	r.HandleFunc("/geovisitas", routes.GetGeovisitasHandler).Methods("GET")
 	r.HandleFunc("/geovisitas", routes.PostGeovisitaHandler).Methods("POST")
 	r.HandleFunc("/geovisitas/{id}", routes.GetGeovisitaHandler).Methods("GET")
 	r.HandleFunc("/geovisitas/{id}", routes.DeleteGeovisitaHandler).Methods("DELETE")
 	r.HandleFunc("/geovisitas/{id}", routes.UpdateGeovisitaHandler).Methods("PUT")
+
+	// Rutas para geodatos que simplemente reutilizan los manejadores de geovisitas
+	r.HandleFunc("/geodatos", routes.GetGeovisitasHandler).Methods("GET")
+	r.HandleFunc("/geodatos/{id}", routes.GetGeovisitaHandler).Methods("GET")
 
 	// Ruta para subir imágenes
 	r.HandleFunc("/upload", routes.UploadImageHandler).Methods("POST")

@@ -23,4 +23,5 @@ type Geovisitas struct {
 	QuienesTrabajan string `json:"quienes_trabajan"`
 	TrabajaNino     string `json:"trabaja_nino"` // 'Si', 'No'
 	Observaciones   string `json:"observaciones"`
+	Uservisita      string `json:"uservisita" `
 }
