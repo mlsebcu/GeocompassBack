@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -10,14 +10,17 @@ import (
 	"github.com/rs/cors"
 )
 
-func main() {
+// Función que maneja las peticiones HTTP
+func VercelHandler(w http.ResponseWriter, r *http.Request) {
 	db.DBConnection()
 
-	// AutoMigrate se asegura de que las tablas para los modelos existan
+	// AutoMigrate asegura que las tablas para los modelos existan
 	db.DB.AutoMigrate(&models.User{}, &models.Geopoint{}, &models.Geovisitas{})
 
-	r := mux.NewRouter()
+	// Crea un nuevo enrutador
+	router := mux.NewRouter()
 
+	// Configura CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
@@ -25,37 +28,41 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	r.HandleFunc("/", routes.HomeHandler)
-	r.HandleFunc("/users", routes.GetUsersHandler).Methods("GET")
-	r.HandleFunc("/users", routes.PostUserHandler).Methods("POST")
-	r.HandleFunc("/users/{id}", routes.GetUserHandler).Methods("GET")
-	r.HandleFunc("/users/{id}", routes.DeleteUserHandler).Methods("DELETE")
-	r.HandleFunc("/login", routes.LoginHandler).Methods("POST")
+	// Rutas
+	router.HandleFunc("/", routes.HomeHandler)
+	router.HandleFunc("/users", routes.GetUsersHandler).Methods("GET")
+	router.HandleFunc("/users", routes.PostUserHandler).Methods("POST")
+	router.HandleFunc("/users/{id}", routes.GetUserHandler).Methods("GET")
+	router.HandleFunc("/users/{id}", routes.DeleteUserHandler).Methods("DELETE")
+	router.HandleFunc("/login", routes.LoginHandler).Methods("POST")
 
 	// Rutas para los geopoints
-	r.HandleFunc("/geopoints", routes.GetGeopointsHandler).Methods("GET")
-	r.HandleFunc("/geopoints", routes.PostGeopointHandler).Methods("POST")
-	r.HandleFunc("/geopoints/{id}", routes.GetGeopointHandler).Methods("GET")
-	r.HandleFunc("/geopoints/{id}", routes.DeleteGeopointHandler).Methods("DELETE")
-	r.HandleFunc("/geopoints/{id}", routes.UpdateGeopointHandler).Methods("PUT")
+	router.HandleFunc("/geopoints", routes.GetGeopointsHandler).Methods("GET")
+	router.HandleFunc("/geopoints", routes.PostGeopointHandler).Methods("POST")
+	router.HandleFunc("/geopoints/{id}", routes.GetGeopointHandler).Methods("GET")
+	router.HandleFunc("/geopoints/{id}", routes.DeleteGeopointHandler).Methods("DELETE")
+	router.HandleFunc("/geopoints/{id}", routes.UpdateGeopointHandler).Methods("PUT")
 
 	// Rutas para las geovisitas
-	r.HandleFunc("/geovisitas", routes.GetGeovisitasHandler).Methods("GET")
-	r.HandleFunc("/geovisitas", routes.PostGeovisitaHandler).Methods("POST")
-	r.HandleFunc("/geovisitas/{id}", routes.GetGeovisitaHandler).Methods("GET")
-	r.HandleFunc("/geovisitas/{id}", routes.DeleteGeovisitaHandler).Methods("DELETE")
-	r.HandleFunc("/geovisitas/{id}", routes.UpdateGeovisitaHandler).Methods("PUT")
+	router.HandleFunc("/geovisitas", routes.GetGeovisitasHandler).Methods("GET")
+	router.HandleFunc("/geovisitas", routes.PostGeovisitaHandler).Methods("POST")
+	router.HandleFunc("/geovisitas/{id}", routes.GetGeovisitaHandler).Methods("GET")
+	router.HandleFunc("/geovisitas/{id}", routes.DeleteGeovisitaHandler).Methods("DELETE")
+	router.HandleFunc("/geovisitas/{id}", routes.UpdateGeovisitaHandler).Methods("PUT")
 
 	// Rutas para geodatos que simplemente reutilizan los manejadores de geovisitas
-	r.HandleFunc("/geodatos", routes.GetGeovisitasHandler).Methods("GET")
-	r.HandleFunc("/geodatos/{id}", routes.GetGeovisitaHandler).Methods("GET")
+	router.HandleFunc("/geodatos", routes.GetGeovisitasHandler).Methods("GET")
+	router.HandleFunc("/geodatos/{id}", routes.GetGeovisitaHandler).Methods("GET")
 
 	// Ruta para subir imágenes
-	r.HandleFunc("/upload", routes.UploadImageHandler).Methods("POST")
+	router.HandleFunc("/upload", routes.UploadImageHandler).Methods("POST")
 
 	// Ruta para servir archivos estáticos
-	r.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
+	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
 
-	handler := c.Handler(r)
-	http.ListenAndServe(":8080", handler)
+	// Envuelve el router con CORS
+	handler := c.Handler(router)
+
+	// Maneja la petición
+	handler.ServeHTTP(w, r)
 }
