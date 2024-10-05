@@ -1,11 +1,18 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+
+	"log"
 
 	"github.com/alejoca7/geo-back/db"
 	"github.com/alejoca7/geo-back/models"
 	"github.com/alejoca7/geo-back/routes"
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
@@ -55,10 +62,8 @@ func VercelHandler(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/geodatos/{id}", routes.GetGeovisitaHandler).Methods("GET")
 
 	// Ruta para subir imágenes
-	router.HandleFunc("/upload", routes.UploadImageHandler).Methods("POST")
+	router.HandleFunc("/upload", UploadImageHandler).Methods("POST")
 
-	// Ruta para servir archivos estáticos
-	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
 	// Fin rutas
 
 	// Envuelve el router con CORS
@@ -66,4 +71,44 @@ func VercelHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Maneja la petición
 	handler.ServeHTTP(w, r)
+}
+
+// UploadImageHandler maneja la subida de imágenes a Cloudinary
+func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
+	// Limitar el tamaño del archivo a 10 MB
+	r.ParseMultipartForm(10 << 20)
+
+	file, handler, err := r.FormFile("image")
+	if err != nil {
+		http.Error(w, "Error al leer el archivo", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Generar un nombre único para la imagen
+	imageID := uuid.New().String() + "-" + handler.Filename
+
+	// Inicializar Cloudinary
+	cld, err := cloudinary.NewFromParams(
+		os.Getenv("CLOUDINARY_CLOUD_NAME"),
+		os.Getenv("CLOUDINARY_API_KEY"),
+		os.Getenv("CLOUDINARY_API_SECRET"),
+	)
+	if err != nil {
+		log.Fatalf("Error al inicializar Cloudinary: %v", err)
+	}
+
+	// Subir la imagen a Cloudinary
+	resp, err := cld.Upload.Upload(r.Context(), file, uploader.UploadParams{
+		PublicID: imageID,
+	})
+	if err != nil {
+		http.Error(w, "Error al subir la imagen a Cloudinary", http.StatusInternalServerError)
+		return
+	}
+
+	// Responder con la URL de la imagen
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf(`{"image_url": "%s"}`, resp.SecureURL)))
 }
